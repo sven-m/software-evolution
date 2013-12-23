@@ -9,6 +9,6 @@ public loc qlProject = |project://QL|;
 
 
 public void main() {
-	Resource project = getProject(smallProject);
-	analyze(project);
+    Resource project = getProject(smallProject);
+    analyze(project);
 }

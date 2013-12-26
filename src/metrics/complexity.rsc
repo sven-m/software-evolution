@@ -39,8 +39,10 @@ public int numericUnitComplexity(AstNode method:methodDeclaration(_, _, _, _, _,
             cc += 1 + conjunctions(boolExpr);
         case doStatement(_, boolExpr):
             cc += 1 + conjunctions(boolExpr);
-        case forStatement(_, boolExpr, _, _):
+        case forStatement(_, some(boolExpr), _, _):
             cc += 1 + conjunctions(boolExpr);
+        case forStatement(_, _, _, _):
+            cc += 1;
         case enhancedForStatement(_, _, _):
             cc += 1;
         case switchCase(_, _):

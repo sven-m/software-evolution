@@ -22,22 +22,22 @@ data MethodInfo = methodInfo(AstNode method, int volume, int complexity);
 
 public void main() {
     println("getting all complexities and sizes...");
-    DataPointList dataPoints = [makeDataPoint(method) | method <- extractMethods(smallProject)];
+    //DataPointList dataPoints = [makeDataPoint(method) | method <- extractMethods(smallProject)];
+    
+    
+    DataPointList dataPoints = [
+    	fakeDataPoint("A", 1, 1),
+    	fakeDataPoint("B", 2, 2),
+    	fakeDataPoint("C", 3, 5),
+    	fakeDataPoint("D", 4, 10),
+    	fakeDataPoint("E", 5, 20),
+    	fakeDataPoint("F", 6, 50),
+    	fakeDataPoint("G", 7, 100),
+    	fakeDataPoint("H", 8, 200)
+    ];
     
     println("done.");
-    //correlation 
-    /*lrel[str methods, tuple[int sizes, int complexities] points] correlation = [
-        <"A", 1, 1>,
-        <"B", 2, 2>,
-        <"C", 3, 3>,
-        <"D", 4, 4>,
-        <"E", 5, 5>,
-        <"F", 6, 6>,
-        <"G", 7, 7>,
-        <"H", 1000, 1000>,
-        <"I", 1000, 1000>,
-        <"J", 1000, 1000>
-    ];*/
+    
     
     MenuBuilder menuBuilder = MenuBuilderResult(value dataItem) {
         return buildMenuItem(dataItem);
@@ -61,6 +61,14 @@ public void main() {
     println("done.");
 }
 
+
+public DataPoint fakeDataPoint(str name, int volume, int complexity) {
+    Point point = <volume, complexity>;
+    AstNode method = methodDeclaration([], [], [], none(), name, [], [], none())[@location=|file://SQLBig/file.java|(0,0,<0,0>,<0,0>)];
+    MethodInfo dataItem = methodInfo(method, volume, complexity);
+    
+    return <dataItem, point>;
+}
 private DataPoint makeDataPoint(AstNode method:methodDeclaration(_, _, _, _, _, _, _, _)) {
     int volume = getASTVolume(method);
     int complexity = numericUnitComplexity(method);

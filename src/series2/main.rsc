@@ -22,10 +22,10 @@ data MethodInfo = methodInfo(AstNode method, int volume, int complexity);
 
 public void main() {
     println("getting all complexities and sizes...");
-    //DataPointList dataPoints = [makeDataPoint(method) | method <- extractMethods(smallProject)];
+    DataPointList dataPoints = [makeDataPoint(method) | method <- extractMethods(smallProject)];
     
     
-    DataPointList dataPoints = [
+    /*DataPointList dataPoints = [
     	fakeDataPoint("A", 1, 1),
     	fakeDataPoint("B", 2, 2),
     	fakeDataPoint("C", 3, 5),
@@ -34,7 +34,7 @@ public void main() {
     	fakeDataPoint("F", 6, 50),
     	fakeDataPoint("G", 7, 100),
     	fakeDataPoint("H", 8, 200)
-    ];
+    ];*/
     
     println("done.");
     

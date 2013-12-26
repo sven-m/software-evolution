@@ -103,8 +103,8 @@ private Figure makePlot(PointMap pointMap, MenuBuilder interactionCallback) {
     
     Figure plot = grid(figureGrid); 
     
-    plot = addAxis(plot, vertical(), y_maximum);
-    plot = addAxis(plot, horizontal(), x_maximum);
+    plot = addAxis(plot, vertical(), y_maximum, false);
+    plot = addAxis(plot, horizontal(), x_maximum, true);
     
     return plot; 
 }
@@ -122,15 +122,17 @@ private void rebuildMenu(set[value] dataItems, MenuBuilder interactionCallback) 
 
 /* helpers */
 
-public Figure addAxis(Figure plot, Orientation orientation, int max_coord) {
+public Figure addAxis(Figure plot, Orientation orientation, int max_coord, bool addCorner) {
     int topGroup = floor(log10(max_coord));
     int numGroups = topGroup + 1;
     
     list[Figure] groups = [makeGroup(groupNumber, orientation) | groupNumber <- [0..numGroups]];
     
-    Figure ticks = longitudinalCat(reverse(groups), [lateralShrink(0.1, orientation)], orientation);
+    if (addCorner) {
+        groups = [box(longitudinalShrink(0.1, orientation))] + groups;
+    }
     
-    Figure result; 
+    Figure ticks = longitudinalCat(reverse(groups), [lateralShrink(0.1, orientation)], orientation);
     
     return lateralCat([ticks, plot], [], orientation);
 }

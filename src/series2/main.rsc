@@ -4,6 +4,7 @@ import metrics::complexity;
 import metrics::volume;
 import misc::astloader;
 import visualization::scatter;
+import misc::stringconversion;
 
 import Prelude;
 import Type;
@@ -17,10 +18,11 @@ public loc bigProject = |project://SQLBig/|;
 public loc smallProject = |project://SQLSmall/|;
 public loc qlProject = |project://QL|;
 
+data MethodInfo = methodInfo(AstNode method, int volume, int complexity);
 
 public void main() {
     println("getting all complexities and sizes...");
-    DataPointList dataPoints = [<m, <getASTVolume(m), numericUnitComplexity(m)>> | m <- extractMethods(smallProject)];
+    DataPointList dataPoints = [makeDataPoint(method) | method <- extractMethods(smallProject)];
     
     println("done.");
     //correlation 
@@ -37,6 +39,10 @@ public void main() {
         <"J", 1000, 1000>
     ];*/
     
+    MenuBuilder menuBuilder = MenuBuilderResult(value dataItem) {
+        return buildMenuItem(dataItem);
+    };
+    
     println("building figure...");
     Figure scatterPlot = scatter(dataPoints,
         [
@@ -45,7 +51,7 @@ public void main() {
             x_max(max(dataPoints.points.x)),
             y_max(max(dataPoints.points.y)),
             logarithmic(),
-            onPointSelect(void (Point p, value dataItem) { println("X:<p.x> Y:<p.y> L:<label(takeOneFrom(dataItem))>"); } )
+            userInteraction(menuBuilder)
         ]
     );
     println("done.");
@@ -55,32 +61,36 @@ public void main() {
     println("done.");
 }
 
-private void assertIsMethod(value dataItem) {
-    assert (methodDeclaration(_, _, _, _, _, _, _, _) := dataItem) 
-    : "data should be AstNode (methodDeclaration(...)), but is of type <typeOf(dataItem)>.";
+private DataPoint makeDataPoint(AstNode method:methodDeclaration(_, _, _, _, _, _, _, _)) {
+    int volume = getASTVolume(method);
+    int complexity = numericUnitComplexity(method);
+    Point point = <volume, complexity>;
+    
+    MethodInfo dataItem = methodInfo(method, volume, complexity);
+    
+    return <dataItem, point>;
 }
 
-//public str label(methodDeclaration(_, _, _, _, str name, _, _, _)) = name;
+private MenuBuilderResult buildMenuItem(value dataItem) {
+    if (MethodInfo info:methodInfo(method, volume, complexity) := dataItem) {
+        if (methodDeclaration(_, _, _, _, _, _, _, _) := method) {
+            void() clickHandler = void() {
+                edit(method@location);
+            };
+        
+            return <"<label(method)> (SIZE = <volume> SLOC, COMP = <complexity>)", clickHandler>;
+        }
+    }
+}
+
+private void typeError(Symbol expected, Symbol actual) {
+    assert false : "data should be <expected>, but is <actual>.";
+}
+
 private str label(value dataItem) {
-    assertIsMethod(dataItem);
-    
-    if (methodDeclaration(_, _, _, _, str name, _, _, _) := dataItem) {
-        return name;
-    }
-}
-
-private void printLocation(value dataItem) {
-    assertIsMethod(dataItem);
-    
-    if (AstNode method:methodDeclaration(_, _, _, _, _, _, _, _) := dataItem) {
-        println(method@location);
-    }
-}
-
-private void editLocation(value dataItem) {
-    assertIsMethod(dataItem);
-    
-    if (AstNode method:methodDeclaration(_, _, _, _, _, _, _, _) := dataItem) {
-        edit(method@location);
+    if (AstNode method:methodDeclaration(_, _, _, _, str name, _, _, _) := dataItem) {
+        return "<toShortString(method)> @ <method@location.file>:<method@location.begin.line>";
+    } else {
+        typeError(adt("AstNode", []), typeOf(dataItem));
     }
 }

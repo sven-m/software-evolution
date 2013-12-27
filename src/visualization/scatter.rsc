@@ -90,7 +90,7 @@ private Figure makePlot(PointMap pointMap, MenuBuilder interactionCallback) {
                 
                 onclick = onMouseDownAtPoint(<x,y>, handler); 
                 
-                shape = ellipse(fillColor("green"), onclick);
+                shape = ellipse(fillColor(getColor(size(pointMap[<x,y>]))), onclick);
             } else {
                 shape = space();
             }
@@ -101,12 +101,45 @@ private Figure makePlot(PointMap pointMap, MenuBuilder interactionCallback) {
     /* flip the grid vertically, because it's being drawn from the top */
     figureGrid = verticalFlip(figureGrid);
     
-    Figure plot = grid(figureGrid); 
+    Figure plot = box(grid(figureGrid)); 
     
-    plot = addAxis(plot, vertical(), y_maximum, false);
-    plot = addAxis(plot, horizontal(), x_maximum, true);
+    plot = addAxis(plot, vertical(), y_maximum, y_axis_name, false);
+    plot = addAxis(plot, horizontal(), x_maximum, x_axis_name, true);
+    
+    str labelText = "<x_axis_name> vs. <y_axis_name>";
+    Figure mainLabel = box(text(labelText, fontSize(20), fontBold(true)), vshrink(0.1));
+    
+    plot = vcat([mainLabel, plot]);
     
     return plot; 
+}
+
+private Color getColor(int numberOfItems) {
+    Color resultingColor = color("white");
+    bool colorSet = false;
+    
+    
+    map[list[int] ranges, Color colors] colorRanges = (
+        [ 1.. 2]: color("blue"),
+        [ 2.. 3]: color("purple"),
+        [ 3.. 4]: color("red"),
+        [ 5..11]: color("orange"),
+        [11..51]: color("yellow"),
+        []      : color("greenyellow")
+    );
+    
+    for (range <- colorRanges.ranges) {
+        if (numberOfItems in range) {
+            resultingColor = colorRanges[range];
+            colorSet = true;
+        }
+    }
+    
+    if (!colorSet) {
+        resultingColor = colorRanges[[]];
+    }
+    
+    return resultingColor;
 }
 
 private void rebuildMenu(set[value] dataItems, MenuBuilder interactionCallback) {
@@ -122,19 +155,25 @@ private void rebuildMenu(set[value] dataItems, MenuBuilder interactionCallback) 
 
 /* helpers */
 
-public Figure addAxis(Figure plot, Orientation orientation, int max_coord, bool addCorner) {
+public Figure addAxis(Figure plot, Orientation orientation, int max_coord, str axisLabel, bool addCorner) {
     int topGroup = floor(log10(max_coord));
     int numGroups = topGroup + 1;
+    
+    axisLateralShrinkFactor = 0.1;
     
     list[Figure] groups = [makeGroup(groupNumber, orientation) | groupNumber <- [0..numGroups]];
     
     if (addCorner) {
-        groups = [box(longitudinalShrink(0.1, orientation))] + groups;
+        groups = [box(longitudinalShrink(axisLateralShrinkFactor, orientation))] + groups;
     }
     
-    Figure ticks = longitudinalCat(reverse(groups), [lateralShrink(0.1, orientation)], orientation);
+    Figure ticks = longitudinalCat(reverse(groups), [], orientation);
     
-    return lateralCat([ticks, plot], [], orientation);
+    Figure axisLabel = text(axisLabel, getLabelAlignment(orientation), fontSize(15), longitudinalShrink(0.1, orientation));
+    
+    Figure axis = overlay([ticks, axisLabel], lateralShrink(axisLateralShrinkFactor, orientation));
+    
+    return lateralCat([axis, plot], [], orientation);
 }
 
 public Figure makeGroup(int groupNumber, Orientation orientation) {
@@ -146,6 +185,9 @@ public Figure makeGroup(int groupNumber, Orientation orientation) {
     
     return longitudinalCat([label, tick], [], orientation);
 }
+
+public FProperty getLabelAlignment(vertical()) = top();
+public FProperty getLabelAlignment(horizontal()) = right();
 
 public tuple[FProperty valign, FProperty halign] getAlignment(vertical()) = <bottom(), right()>;
 public tuple[FProperty valign, FProperty halign] getAlignment(horizontal()) = <top(), left()>;

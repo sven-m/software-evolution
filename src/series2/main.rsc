@@ -20,9 +20,9 @@ public loc qlProject = |project://QL|;
 
 data MethodInfo = methodInfo(AstNode method, int volume, int complexity);
 
-public void main() {
+public void main(loc project) {
     println("getting all complexities and sizes...");
-    DataPointList dataPoints = [makeDataPoint(method) | method <- extractMethods(smallProject)];
+    DataPointList dataPoints = [makeDataPoint(method) | method <- extractMethods(project)];
     
     
     /*DataPointList dataPoints = [

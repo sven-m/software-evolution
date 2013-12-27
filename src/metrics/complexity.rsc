@@ -33,8 +33,8 @@ public int numericUnitComplexity(AstNode method:methodDeclaration(_, _, _, _, _,
     top-down visit(method) {
         case ifStatement(boolExpr, _, _):
             cc += 1 + conjunctions(boolExpr);
-    	case conditionalExpression(_, _, _):
-        	cc += 1;
+        case conditionalExpression(_, _, _):
+            cc += 1;
         case whileStatement(boolExpr, _):
             cc += 1 + conjunctions(boolExpr);
         case doStatement(_, boolExpr):
@@ -48,20 +48,20 @@ public int numericUnitComplexity(AstNode method:methodDeclaration(_, _, _, _, _,
         case switchCase(_, _):
             cc += 1;
         case catchClause(_, _):
-        	cc += 1;
+            cc += 1;
     }
     
     return cc;
 }
 
 private int conjunctions(AstNode boolExpr) {
-	int conjunctions = 0;
-	
-	for (/infixExpression("&&", _, _, _) := boolExpr) {
-		conjunctions += 1;
-	}
-	
-	return conjunctions;
+    int conjunctions = 0;
+    
+    for (/infixExpression("&&", _, _, _) := boolExpr) {
+        conjunctions += 1;
+    }
+    
+    return conjunctions;
 }
 
 public ComplexityClass unitComplexity(AstNode method:methodDeclaration(_, _, _, _, _, _, _, _)) {
